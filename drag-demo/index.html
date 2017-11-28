@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <meta charset="utf-8">
+
+  <title></title>
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+  <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+  <script src="./hidpi-canvas.js"></script>
+  <style>
+   body {
+    height: 2000px;
+   }
+   .block {
+    width:150px;
+    height:150px;
+    background-color: #c1ffff;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    
+   }
+   *{
+       margin:0;
+       padding: 0
+   }
+   body,html{
+       width: 100%;
+       height: 100%;
+       overflow: hidden;
+       margin:0;
+       padding: 0;
+       font-size: 20px;
+       font-weight: 600
+   }
+   .drawBlox{
+     border:1px solid #000;
+     width: 60%;
+     height: 100%;
+     display: inline-block;
+     position: relative
+   }
+   .bg0{background: url("./a1.png");background-size:100% auto }
+   .bg1{background: url("./a2.png");background-size:100% auto}
+   .bg2{background: url("./a3.png");background-size:100% auto}
+   .bg3{background: url("./a4.png");background-size:100% auto}
+   .btnCenter{display: inline-block;vertical-align: top}
+   canvas{position: absolute;left: 0;top: 0}
+  </style>
+ </head>
+ <body>
+  <div class="drawBlox"></div>
+  <canvas id="myCanvas" style="display:block">
+    Your browser does not support the HTML5 canvas tag.
+  </canvas>
+
+  <div class="btnCenter">
+    <button onclick="touch(0)">按钮一</button>
+    <button onclick="touch(1)">按钮二</button>
+    <button onclick="touch(2)">按钮三</button>
+    <button onclick="touch(3)">按钮四</button>
+    <br/><button onclick="build()">生成</button>
+    <ul class="boxArray">
+
+    </ul>
+  </div>
+<script>
+  // 获取节点
+
+  var oW,oH;
+  var numBer=0
+  var lilist =[]
+  // 绑定touchstart事件
+  function touch(index){
+    $(".drawBlox").append("<div id='a"+numBer+"' class='block bg"+index+"'></div>")
+    numBer++
+    bindBox()
+  }
+
+  Array.prototype.unique2 = function(){
+ this.sort(); //先排序
+ var res = [this[0]];
+ for(var i = 1; i < this.length; i++){
+  if(this[i] !== res[res.length - 1]){
+   res.push(this[i]);
+  }
+ }
+ return res;
+}
+
+ function bindBox(){
+  var blocks = document.getElementsByClassName("block");
+  var block = blocks[blocks.length-1]
+    
+    
+    block.addEventListener("touchstart", function(e) {
+      
+       
+      console.log(e);
+      var touches = e.touches[0];
+      oW = touches.clientX - e.target.offsetLeft;
+      oH = touches.clientY - e.target.offsetTop;
+    //阻止页面的滑动默认事件
+      console.log("touchstart"+"ow="+oW+"oH="+oH)
+      document.addEventListener("touchmove",defaultEvent,false);
+    },false)
+    block.addEventListener("touchmove", function(e) {
+      var touches = e.touches[0];
+      var oLeft = touches.clientX - oW;
+      var oTop = touches.clientY - oH;
+      if(oLeft < 0) {
+        oLeft = 0;
+      }else if(oLeft > document.documentElement.clientWidth - block.offsetWidth) {
+        oLeft = (document.documentElement.clientWidth - block.offsetWidth);
+      }
+      e.target.style.left = oLeft + "px";
+      e.target.style.top = oTop + "px";
+      
+      for(var i=0;i<$(".boxArray li").length;i++){
+        console.log($("li")[i].getAttribute("id"))
+        var obk = new Object()
+        lilist.push($("li")[i].getAttribute("id"))
+      }
+      lilist =lilist.length!==0? lilist.unique2():[]
+      console.log(lilist)
+      if(lilist.indexOf(e.target.id)>-1){
+        $(".boxArray #"+e.target.id).html(e.target.id+"x,y="+oLeft+","+oTop)
+      }else{
+        $(".boxArray").append("<li id='"+e.target.id+"'data-type='"+e.target.id.slice(1)+"'>"+e.target.id+"x,y="+oLeft+","+oTop+"</li>")
+
+      }
+
+    },false);
+    
+    block.addEventListener("touchend",function() {
+      document.removeEventListener("touchmove",defaultEvent,false);
+    },false);
+    
+  
+ }
+ var getPixelRatio = function(context) {
+  var backingStore = context.backingStorePixelRatio ||
+    context.webkitBackingStorePixelRatio ||
+    context.mozBackingStorePixelRatio ||
+    context.msBackingStorePixelRatio ||
+    context.oBackingStorePixelRatio ||
+    context.backingStorePixelRatio || 1;
+   return (window.devicePixelRatio || 1) / backingStore;
+};
+
+//调用
+var myCanvas =  document.querySelector("#myCanvas"),
+    content = myCanvas.getContext("2d")
+var ratio = getPixelRatio(content);
+ function build(){
+      console.log($(".drawBlox").css("width"))
+      $("#myCanvas").css("width",$(".drawBlox").css("width"))
+      $("#myCanvas").css("height",$(".drawBlox").css("height")/2)
+      myCanvas.width = parseFloat($(".drawBlox").css("width"))
+      myCanvas.height = parseFloat($(".drawBlox").css("height"))/2
+      var imgA1 = new Image()
+      imgA1.src="./a1.png"
+      imgA1.onload = function(){
+        console.log(imgA1.height,imgA1.width)
+        content.drawImage(imgA1,0,0,150,150)
+    
+   };
+ }
+    function defaultEvent(e) {
+      e.preventDefault();
+    }
+</script>
+ </body>
+</html>
